@@ -23,6 +23,9 @@ void to_string(vec* v);
 vec* scaled(vec* v, float s);
 float* dot(size_t n, vec* v, vec* v2, ...);
 float* theta_between(vec* v, vec* v2);
+vec* perp(vec* v);
 vec* norm(vec* v);
+vec* proj(vec* v, vec* v2);
+vec* cross(vec* v, vec* v2);
 
 #endif // VECTOR_H_INCLUDED
