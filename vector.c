@@ -7,8 +7,8 @@
 vec* init_vec(size_t size) {
     vec* nvec = (vec*) malloc(VECTOR_SIZE); // allocate memory for vector struct
     nvec -> size = size; // set default size/capacity of vector (10)
-    nvec -> alloc = FLOAT_SIZE * DEFAULT_DYNAMIC_MEM; // determine the amount of bytes allocated
-    nvec -> elems = calloc(DEFAULT_DYNAMIC_MEM, FLOAT_SIZE); // create contiguous memory for elements
+    nvec -> alloc = FLOAT_SIZE * size; // determine the amount of bytes allocated
+    nvec -> elems = calloc(size, FLOAT_SIZE); // create contiguous memory for elements
     return nvec;
 }
 
@@ -160,6 +160,31 @@ static float fast_inverse_square_root(float n) {
 vec* norm(vec* v) {
     return scaled(v, fast_inverse_square_root(squared_mag(v)));
 }
+
+vec* proj(vec* v, vec* v2) {
+    /*
+    Return the vector corresponding to the projection of vector v onto vector v2
+    */
+    vec* nvec = copy(v2);
+    return scaled(nvec, *dot(2, v, v2) / squared_mag(v2));
+}
+
+vec* cross(vec* v, vec* v2) {
+    if(v -> size != 3 || v2 -> size != 3) {
+        return NULL;
+    }
+    float* comps = v -> elems;
+    float* comps2 = v2 -> elems;
+    float a1 = comps[0], a2 = comps[1], a3 = comps[2],
+            b1 = comps2[0], b2 = comps2[1], b3 = comps2[2];
+    vec* nvec = init_vec(3);
+    set(nvec, 0, a2 * b3 - a3 * b2);
+    set(nvec, 1, a3 * b1 - a1 * b3);
+    set(nvec, 2, a1 * b2 - a2 * b1);
+    return nvec;
+}
+
+
 
 
 
