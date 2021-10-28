@@ -1,7 +1,7 @@
 #include "matrix.h"
 
-#define VECTOR_SIZE sizeof(vec)
-#define MATRIX_SIZE sizeof(mat)
+VECTOR_SIZE = sizeof(vec);
+MATRIX_SIZE = sizeof(mat);
 
 mat* init_mat(size_t w, size_t h) {
     mat* nmat = (mat*)  malloc(MATRIX_SIZE);
