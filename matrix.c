@@ -4,33 +4,33 @@ VECTOR_SIZE = sizeof(vec);
 MATRIX_SIZE = sizeof(mat);
 
 mat* init_mat(size_t w, size_t h) {
-    mat* nmat = (mat*)  malloc(MATRIX_SIZE);
-    nmat -> w = w;
-    nmat -> h = h;
-    nmat -> alloc = w * VECTOR_SIZE;
-    nmat -> cols = malloc(nmat -> alloc);
+    mat* nmat = malloc(MATRIX_SIZE);
+    nmat->w = w;
+    nmat->h = h;
+    nmat->alloc = w * VECTOR_SIZE;
+    nmat->cols = malloc(nmat->alloc);
     for(int i = 0; i < w; i++) {
-       nmat -> cols[i] = init_vec(h);
+       nmat->cols[i] = init_vec(h);
     };
     return nmat;
 }
 
 void to_stringm(mat* m) {
     printf("[\n");
-    for(int i = 0; i < m -> w - 1; i++) {
+    for(int i = 0; i < m->w - 1; i++) {
         printf("\t");
-        to_string(m -> cols[i]);
+        to_string(m->cols[i]);
     };
     printf("\t");
-    to_string(m -> cols[m -> w - 1]);
+    to_string(m->cols[m->w - 1]);
     printf("]\n");
 }
 
 void* setm(mat* m, size_t x, size_t y, float replacement) {
-    if(x > m -> w || y > m -> h) {
+    if(x > m->w || y > m->h) {
         return NULL;
     }
-    *((*(m -> cols + y)) -> elems + x) = replacement;
+    *((*(m->cols + y)) -> elems + x) = replacement;
 }
 
 void delm(mat* m) {
