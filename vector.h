@@ -6,6 +6,11 @@
 #include <stdarg.h>
 #include <math.h>
 
+#define to_string(X) _Generic((X),                      \
+                         vec*: to_stringv,              \
+                         mat*: to_stringm               \
+                         )(X)
+
 typedef struct vec {
     float* elems; // elements contained within vector
     size_t alloc; // num of allocated bytes
@@ -13,13 +18,13 @@ typedef struct vec {
 } vec;
 
 vec* init_vec(size_t size);
-vec* copy(vec* v);
-int set(vec* v, size_t index, float replacement);
-void resize(vec* v, size_t mutation_size);
+static void* copy(void* o);
+void* setv(vec* v, size_t index, float replacement);
+void* resizev(vec* v, size_t mutation_size);
 void del(vec* v);
 void merge(vec* v, vec* v2);
 void append(vec* v, float item);
-void to_string(vec* v);
+void to_stringv(vec* v);
 vec* sum(size_t n, vec* v, vec* v2, ...);
 vec* prod(size_t n, vec* v, vec* v2, ...);
 vec* scale(vec* v, float s);
