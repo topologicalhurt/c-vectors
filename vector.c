@@ -2,19 +2,23 @@
 
 DEFAULT_DYNAMIC_MEM = 0xA;
 FLOAT_SIZE = sizeof(float);
-VECTOR_SIZE = sizeof(vec*);
+VECTOR_SIZE = sizeof(vec);
 
 vec* init_vec(size_t size) {
     vec* nvec = malloc(VECTOR_SIZE); // allocate memory for vector struct
+    nvec->dim = size;
     nvec->size = size > DEFAULT_DYNAMIC_MEM ? size : DEFAULT_DYNAMIC_MEM; // set default size/capacity of vector (10)
     nvec->alloc = FLOAT_SIZE * nvec->size; // determine the amount of bytes allocated
     nvec->elems = calloc(nvec->size, FLOAT_SIZE); // create contiguous memory for elements
     return nvec;
 }
 
-static void* copy(void* o) {
+void* copy(void* o) {
     void* nobj = (void*) malloc(sizeof(o));
-    memcpy(&nobj, &o, sizeof(o));
+    void* tmp = memcpy(&nobj, &o, sizeof(o));
+    if(tmp == NULL) {
+        return NULL;
+    }
     return nobj;
 }
 
@@ -41,24 +45,44 @@ void delv(vec* v) {
     free(v);
 }
 
-void merge(vec* v, vec* v2) {
-    size_t prior_size = v->size;
-    resizev(v, v->size + v2->size); // resize vector based on spanned length
-    memcpy(&(v->elems[prior_size]),
+void* mergev(vec* v, vec* v2) {
+    size_t psize = v->dim;
+    size_t nsize = psize + v2->dim <= DEFAULT_DYNAMIC_MEM ? DEFAULT_DYNAMIC_MEM :
+        psize + v2->dim;
+    v->size = nsize;
+    v->dim += v2->dim;
+    if(nsize > DEFAULT_DYNAMIC_MEM) {
+        resizev(v, nsize);
+        void* tmp = memcpy(&(v->elems[psize]),
         v2->elems,
-        v->alloc);
+        (nsize - psize) * FLOAT_SIZE);
+        if(tmp == NULL) {
+            return NULL;
+        }
+    } else {
+        void* tmp = memcpy(&(v->elems[psize]),
+        v2->elems,
+        v2->dim * FLOAT_SIZE);
+        if(tmp == NULL) {
+            return NULL;
+        }
+    }
 }
 
-void append(vec* v, float item) {
-   resizev(v, v->size + 1);
-   memcpy(&(v->elems[v->size - 1]),
-        &item,
-        v->alloc); // special 1D case of merge
+void* append(vec* v, float item) {
+    v->dim++;
+    void* tmp;
+    size_t nsize = v->dim <= DEFAULT_DYNAMIC_MEM ? DEFAULT_DYNAMIC_MEM :
+        v->dim;
+    if(nsize > DEFAULT_DYNAMIC_MEM) {
+        resizev(v, v->dim);
+    }
+    setv(v, v->dim - 1, item);
 }
 
 void to_stringv(vec* v) {
     float* elems = v->elems;
-    size_t elem_size = v->size;
+    size_t elem_size = v->dim;
     char buffer[0x1A]; // 24 char bytes for float, 1 char byte for comma, 1 char byte for null terminator
     printf("[");
     for(int i = 0; i < elem_size - 1; i++) {
@@ -72,7 +96,7 @@ vec* sum(size_t n, vec* v, vec* v2, ...) {
     if(n < 2) {
         return NULL;
     }
-    size_t elem_size = v->size; // length of first vector is assumed dimension
+    size_t elem_size = v->dim; // length of first vector is assumed dimension
     vec* sumvec = copy(v);
     for(int i = 0; i < elem_size; i++) {
         sumvec -> elems[i] += v2->elems[i];
@@ -97,7 +121,7 @@ vec* prod(size_t n, vec* v, vec* v2, ...) {
     if(n < 2) {
         return NULL;
     }
-    size_t elem_size = v->size; // length of first vector is assumed dimension
+    size_t elem_size = v->dim; // length of first vector is assumed dimension
     vec* prodvec = copy(v);
     for(int i = 0; i < elem_size; i++) {
         prodvec->elems[i] *= v2->elems[i];
@@ -120,7 +144,7 @@ vec* prod(size_t n, vec* v, vec* v2, ...) {
 
 vec* scale(vec* v, float s) {
     vec* nvec = copy(v);
-    for(int i = 0; i < v->size; i++) {
+    for(int i = 0; i < v->dim; i++) {
         nvec->elems[i] *= s;
     };
     return nvec;
@@ -128,7 +152,7 @@ vec* scale(vec* v, float s) {
 
 static float squared_mag(vec* v) {
     float mag_squared = 0;
-    for(int i = 0; i < v->size; i++) {
+    for(int i = 0; i < v->dim; i++) {
         float comp = v->elems[i];
         mag_squared += comp * comp;
     };
@@ -139,7 +163,7 @@ float* dot(size_t n, vec* v, vec* v2, ...) {
     if(n < 2) {
         return NULL;
     }
-    size_t elem_size = v->size; // length of first vector is assumed dimension
+    size_t elem_size = v->dim; // dimension of first vector is assumed dimension
     float dot_product = 0;
     if(n == 2) {
         for(int i = 0; i < elem_size; i++) {
@@ -176,10 +200,10 @@ float* theta_between(vec* v, vec* v2) {
 }
 
 vec* perp(vec* v) {
-    vec* nvec = copy(v);
-    if(v->size != 2) {
+    if(v->dim != 2) {
         return NULL;
     }
+    vec* nvec = copy(v);
     float tmp = nvec->elems[0];
     float replacement = nvec->elems[1];
     replacement *= -1;
@@ -224,7 +248,7 @@ vec* proj(vec* v, vec* v2) {
 }
 
 vec* cross(vec* v, vec* v2) {
-    if(v->size != 3 || v2->size != 3) {
+    if(v->dim != 3 || v2->dim != 3) {
         return NULL;
     }
     float* comps = v->elems;
