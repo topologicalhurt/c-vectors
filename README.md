@@ -28,10 +28,10 @@ Vector example:
 `   
 We can also use the auxillay functions for the vector and matrix class respectively to do some maths:
 `
+
     vec* NVEC = init_vec(3);
     vec* NVEC2 = init_vec(3);
     vec* NVEC3 = init_vec(3);
-
     setv(NVEC, 0, 1);
     setv(NVEC, 1, 1);
     setv(NVEC, 2, 1);
@@ -41,7 +41,7 @@ We can also use the auxillay functions for the vector and matrix class respectiv
     setv(NVEC3, 0, 10);
     setv(NVEC3, 1, 5);
     setv(NVEC3, 2, 88);
-
+    
     to_string(prod(3, NVEC, NVEC2, NVEC3));
     to_string(sum(3, NVEC, NVEC2, NVEC3));
     to_string(scale(NVEC3, 5));
