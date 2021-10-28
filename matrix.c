@@ -1,6 +1,6 @@
 #include "matrix.h"
 
-VECTOR_SIZE = sizeof(vec);
+static VECTOR_SIZE = sizeof(vec);
 MATRIX_SIZE = sizeof(mat);
 
 mat* init_mat(size_t w, size_t h) {
