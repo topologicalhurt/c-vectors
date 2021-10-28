@@ -13,17 +13,25 @@
 
 typedef struct vec {
     float* elems; // elements contained within vector
+    size_t dim;
     size_t alloc; // num of allocated bytes
     size_t size; // num of elements
 } vec;
 
+enum errors {
+    NONE,
+    INDEX_ERROR,
+    MEM_ERROR,
+    MATH_ERROR
+};
+
 vec* init_vec(size_t size);
-static void* copy(void* o);
+void* copy(void* o);
 void* setv(vec* v, size_t index, float replacement);
 void* resizev(vec* v, size_t mutation_size);
 void del(vec* v);
-void merge(vec* v, vec* v2);
-void append(vec* v, float item);
+void* mergev(vec* v, vec* v2);
+void* append(vec* v, float item);
 void to_stringv(vec* v);
 vec* sum(size_t n, vec* v, vec* v2, ...);
 vec* prod(size_t n, vec* v, vec* v2, ...);
