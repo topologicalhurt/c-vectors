@@ -26,21 +26,24 @@ enum errors {
 };
 
 vec* init_vec(size_t size);
-void* copy(void* o);
+void* copyo(void* o);
 void* setv(vec* v, size_t index, float replacement);
 void* resizev(vec* v, size_t mutation_size);
-void del(vec* v);
+void delv(vec* v);
+int* equalsv(const vec* v, const vec* v2);
 void* mergev(vec* v, vec* v2);
-void* append(vec* v, float item);
+void* appendv(vec* v, float item);
 void to_stringv(vec* v);
-vec* sum(size_t n, vec* v, vec* v2, ...);
-vec* prod(size_t n, vec* v, vec* v2, ...);
-vec* scale(vec* v, float s);
-float* dot(size_t n, vec* v, vec* v2, ...);
+vec* sumv(size_t n, vec* v, vec* v2, ...);
+vec* prodv(size_t n, vec* v, vec* v2, ...);
+vec* scalev(vec* v, float s);
+float magv(vec* v);
+float distv(vec* v, vec* v2);
+float* dotv(size_t n, vec* v, vec* v2, ...);
 float* theta_between(vec* v, vec* v2);
-vec* perp(vec* v);
-vec* norm(vec* v);
-vec* proj(vec* v, vec* v2);
-vec* cross(vec* v, vec* v2);
+vec* perpv(vec* v);
+vec* normv(vec* v);
+vec* projv(vec* v, vec* v2);
+vec* crossv(vec* v, vec* v2);
 
 #endif // VECTOR_H_INCLUDED
