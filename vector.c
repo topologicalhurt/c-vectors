@@ -13,20 +13,19 @@ vec* init_vec(size_t size) {
     return nvec;
 }
 
-void* copy(void* o) {
-    void* nobj = (void*) malloc(sizeof(o));
-    void* tmp = memcpy(&nobj, &o, sizeof(o));
-    if(tmp == NULL) {
-        return NULL;
+vec* copyv(vec* v) {
+    vec* nvec = init_vec(v->dim);
+    for(int i = 0; i < nvec->size; i++) {
+        nvec->elems[i] = v->elems[i];
     }
-    return nobj;
+    return nvec;
 }
 
 void* setv(vec* v, size_t index, float replacement) {
-    if(v->size < index) {
+    if(v->dim < index) {
         return NULL;
     }
-    *(v->elems + index) = replacement;
+    v->elems[index] = replacement;
 }
 
 void* resizev(vec* v, size_t nsize) {
@@ -43,6 +42,14 @@ void* resizev(vec* v, size_t nsize) {
 void delv(vec* v) {
     free(v->elems);
     free(v);
+}
+
+int* equalsv(const vec* v, const vec* v2) {
+    int* tmp = memcmp(v->elems, v2->elems, sizeof(float*));
+    if(tmp == NULL) {
+        return NULL;
+    }
+    return tmp;
 }
 
 void* mergev(vec* v, vec* v2) {
@@ -69,7 +76,7 @@ void* mergev(vec* v, vec* v2) {
     }
 }
 
-void* append(vec* v, float item) {
+void* appendv(vec* v, float item) {
     v->dim++;
     void* tmp;
     size_t nsize = v->dim <= DEFAULT_DYNAMIC_MEM ? DEFAULT_DYNAMIC_MEM :
@@ -92,74 +99,83 @@ void to_stringv(vec* v) {
     printf("%f]\n", elems[elem_size - 1]);
 }
 
-vec* sum(size_t n, vec* v, vec* v2, ...) {
+vec* sumv(size_t n, vec* v, vec* v2, ...) {
     if(n < 2) {
         return NULL;
     }
     size_t elem_size = v->dim; // length of first vector is assumed dimension
-    vec* sumvec = copy(v);
+    vec* nvec = copyv(v);
     for(int i = 0; i < elem_size; i++) {
-        sumvec -> elems[i] += v2->elems[i];
+        nvec->elems[i] += v2->elems[i];
     }
     if(n == 2) {
-        return sumvec;
+        return nvec;
     } else {
         va_list args;
         va_start(args, n - 2);
         for(int i = 0; i < n - 2; i++) {
             vec* arg = va_arg(args, vec*);
             for(int j = 0; j < elem_size; j++) {
-                sumvec->elems[j] += arg->elems[j];
+                nvec->elems[j] += arg->elems[j];
             }
         }
         va_end(args);
-        return sumvec;
+        return nvec;
     }
 }
 
-vec* prod(size_t n, vec* v, vec* v2, ...) {
+vec* prodv(size_t n, vec* v, vec* v2, ...) {
     if(n < 2) {
         return NULL;
     }
-    size_t elem_size = v->dim; // length of first vector is assumed dimension
-    vec* prodvec = copy(v);
+    vec* nvec = copyv(v);
+    size_t elem_size = nvec->dim; // length of first vector is assumed dimension
     for(int i = 0; i < elem_size; i++) {
-        prodvec->elems[i] *= v2->elems[i];
+        nvec->elems[i] *= v2->elems[i];
     }
     if(n == 2) {
-        return prodvec;
+        return nvec;
     } else {
         va_list args;
         va_start(args, n - 2);
         for(int i = 0; i < n - 2; i++) {
             vec* arg = va_arg(args, vec*);
             for(int j = 0; j < elem_size; j++) {
-                prodvec->elems[j] *= arg->elems[j];
+                nvec->elems[j] *= arg->elems[j];
             }
         }
         va_end(args);
-        return prodvec;
+        return nvec;
     }
 }
 
-vec* scale(vec* v, float s) {
-    vec* nvec = copy(v);
+vec* scalev(vec* v, float s) {
+    vec* nvec = copyv(v);
     for(int i = 0; i < v->dim; i++) {
         nvec->elems[i] *= s;
     };
     return nvec;
 }
 
-static float squared_mag(vec* v) {
+static float squared_mag(const vec* v) {
+    vec* nvec = copyv(v);
     float mag_squared = 0;
     for(int i = 0; i < v->dim; i++) {
-        float comp = v->elems[i];
+        float comp = nvec->elems[i];
         mag_squared += comp * comp;
     };
     return mag_squared;
 }
 
-float* dot(size_t n, vec* v, vec* v2, ...) {
+float magv(vec* v) {
+    return sqrt(squared_mag(v)); // Lazily, we just use the square root here.
+}
+
+float distv(vec* v, vec* v2) {
+    return magv(sumv(2, v, scalev(v2, -1)));
+}
+
+float* dotv(size_t n, vec* v, vec* v2, ...) {
     if(n < 2) {
         return NULL;
     }
@@ -194,16 +210,16 @@ float* theta_between(vec* v, vec* v2) {
     if(denom == 0) {
         return NULL;
     }
-    float theta = acosf(*dot(2, v, v2) / denom);
+    float theta = acosf(*dotv(2, v, v2) / denom);
     float* ptheta = (float*)&theta;
     return ptheta;
 }
 
-vec* perp(vec* v) {
+vec* perpv(vec* v) {
     if(v->dim != 2) {
         return NULL;
     }
-    vec* nvec = copy(v);
+    vec* nvec = copyv(v);
     float tmp = nvec->elems[0];
     float replacement = nvec->elems[1];
     replacement *= -1;
@@ -235,19 +251,18 @@ static float fast_inverse_square_root(float n) {
 	return y;
 }
 
-vec* norm(vec* v) {
-    return scale(v, fast_inverse_square_root(squared_mag(v)));
+vec* normv(vec* v) {
+    return scalev(v, fast_inverse_square_root(squared_mag(v)));
 }
 
-vec* proj(vec* v, vec* v2) {
+vec* projv(vec* v, vec* v2) {
     /*
     Return the vector corresponding to the projection of vector v onto vector v2
     */
-    vec* nvec = copy(v2);
-    return scale(nvec, *dot(2, v, v2) / squared_mag(v2));
+    return scalev(v, *dotv(2, v, v2) / squared_mag(v2));
 }
 
-vec* cross(vec* v, vec* v2) {
+vec* crossv(vec* v, vec* v2) {
     if(v->dim != 3 || v2->dim != 3) {
         return NULL;
     }
