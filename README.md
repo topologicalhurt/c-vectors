@@ -48,6 +48,6 @@ We can also use the auxillay functions for the vector and matrix class respectiv
     to_string(cross(NVEC2, NVEC3));
     printf("%f\n", *dot(2, NVEC, NVEC2, NVEC3));
 
-`
+`For a comprehensive set of examples on how this project can be integrated into an existing one, please refer to the Pilot folder.
 
 
