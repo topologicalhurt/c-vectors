@@ -1,5 +1,5 @@
 # c-vectors
-Custom vector implementation in c
+Custom vector implementation in c developed by a 1st year student at the university of sydney. Contact csin0659@uni.sydney.edu.au for inquiries.
 
 This is a very (terrible) implementation of vectors and matrices in c. I will expand upon this repository as my skills get better - TODO'S include: 
 
